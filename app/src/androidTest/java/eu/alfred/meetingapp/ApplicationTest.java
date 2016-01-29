@@ -1,4 +1,4 @@
-package eu.alfred.navigationapp;
+package eu.alfred.meetingapp;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

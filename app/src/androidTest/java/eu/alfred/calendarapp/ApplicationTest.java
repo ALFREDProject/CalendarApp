@@ -1,4 +1,4 @@
-package eu.alfred.meetingapp;
+package eu.alfred.calendarapp;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

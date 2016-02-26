@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">MeetingApp</string>
+    <string name="app_name">CalendarApp</string>
 
     <string name="hello_world">Hello</string>
     <string name="action_settings">Settings</string>

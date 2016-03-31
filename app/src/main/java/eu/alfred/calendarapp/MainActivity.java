@@ -1,73 +1,89 @@
 package eu.alfred.calendarapp;
 
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.TaskStackBuilder;
-import android.support.v7.app.ActionBarActivity;
+import android.provider.Settings;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import eu.alfred.api.PersonalAssistant;
-import eu.alfred.api.PersonalAssistantConnection;
-import eu.alfred.api.sensors.SAFFacade;
-import eu.alfred.api.speech.Cade;
-import eu.alfred.api.storage.CloudStorage;
+import java.util.Calendar;
+import java.util.Locale;
+import java.util.Map;
+
 import eu.alfred.api.storage.responses.BucketResponse;
+import eu.alfred.calendarapp.actions.InsertEventAction;
+import eu.alfred.calendarapp.actions.ShowCalendarAction;
+import eu.alfred.ui.AppActivity;
+import eu.alfred.ui.CircleButton;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends AppActivity implements CalendarView.OnCellTouchListener {
 
-    private PersonalAssistant personalAssistant;
-    private CloudStorage cloudStorage;
-    private SAFFacade safFacade;
-    private Cade cade;
+    CalendarView mView = null;
+
+    TextView header;
+    LinearLayout eventView;
+    String android_id;
+
+    final static String SHOW_CALENDAR_ACTION = "ShowCalendarAction";
+    final static String INSERT_EVENT_ACTION = "InsertEventAction";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
-        setContentView(eu.alfred.calendarapp.R.layout.activity_main);
+        circleButton = (CircleButton) findViewById(R.id.voiceControlBtn);
+        circleButton.setOnTouchListener(new CircleTouchListener());
 
-        cloudStorage = null;
-        safFacade = null;
-        //personalAssistant = new PersonalAssistant(this);
-        cade = null;
+        header = (TextView) findViewById(R.id.header);
+        Calendar c = Calendar.getInstance();
+        String month = c.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.getDefault());
+        header.setText(month+" "+c.get(Calendar.YEAR));
 
-        personalAssistant = new PersonalAssistant(this);
+        mView = (CalendarView)findViewById(R.id.calendar);
+        mView.setOnCellTouchListener(this);
+        mView.setHeader(header);
 
-        /*cloudStorage = new CloudStorage(personalAssistant.getMessenger());
-        safFacade = new SAFFacade(personalAssistant.getMessenger());
-        cade = new Cade(personalAssistant.getMessenger());*/
-        sendNotification("Connected to AlfredService");
+        android_id = Settings.Secure.getString(this.getContentResolver(),
+                Settings.Secure.ANDROID_ID);
+        eventView = (LinearLayout) findViewById(R.id.eventview);
+    }
 
-        personalAssistant.setOnPersonalAssistantConnectionListener(new PersonalAssistantConnection() {
+    @Override
+    public void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+
+        cloudStorage.createStructuredBucket(android_id, new BucketResponse() {
             @Override
-            public void OnConnected() {
-                // Do some stuff
-                cade = new Cade(personalAssistant.getMessenger());
+            public void OnSuccess(JSONObject jsonObject) {
+
             }
 
             @Override
-            public void OnDisconnected() {
-                // Do some cleanup stuff
+            public void OnSuccess(JSONArray jsonArray) {
+
+            }
+
+            @Override
+            public void OnSuccess(byte[] bytes) {
+
+            }
+
+            @Override
+            public void OnError(Exception e) {
+
             }
         });
-
-        personalAssistant.Init();
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -91,108 +107,74 @@ public class MainActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void onBtnSaveClick(View view) {
-        EditText nameText = (EditText)this.findViewById(eu.alfred.calendarapp.R.id.nameText);
-        saveText(nameText.getText().toString());
+    @Override
+    public void performAction(String calledAction, Map<String, String> map) {
+        switch (calledAction) {
+            case SHOW_CALENDAR_ACTION:
+                ShowCalendarAction sca = new ShowCalendarAction(this, cade);
+                sca.performAction(calledAction, map);
+                break;
+            case INSERT_EVENT_ACTION:
+                InsertEventAction iea = new InsertEventAction(this, cade, cloudStorage, android_id);
+                iea.performAction(calledAction, map);
+                break;
+            default:
+                break;
+        }
     }
 
-    public void onBtnReadClick(View view){
-        readText();
+    @Override
+    public void performWhQuery(String s, Map<String, String> map) {
+
     }
 
-    private void saveText(String text) {
+    @Override
+    public void performValidity(String s, Map<String, String> map) {
 
-        //cade.InitiateSpeechRecognition();
+    }
 
-        /*cade.GetCadeBackendUrl(new CadeResponse() {
-            @Override
-            public void OnSuccess(JSONObject jsonObject) {
-                //Not used
-            }
+    @Override
+    public void performEntityRecognizer(String s, Map<String, String> map) {
 
-            @Override
-            public void OnSuccess(JSONArray jsonArray) {
-                //Not used
-            }
+    }
 
-            @Override
-            public void OnSuccess(String s) {
-                String data = s;
-            }
+    public void onTouch(Cell cell) {
+        eventView.removeAllViews();
+        int year = mView.getYear();
+        int month = mView.getMonth();
+        int day = cell.getDayOfMonth();
 
-            @Override
-            public void OnError(Exception e) {
+        // FIX issue 6: make some correction on month and year
+        if (cell instanceof CalendarView.GrayCell) {
+            // oops, not pick current month...
+            if (day < 15) {
+                // pick one beginning day? then a next month day
+                if (month == 11) {
+                    month = 0;
+                    year++;
+                } else {
+                    month++;
+                }
 
-            }
-        });*/
-
-       // AudioManager manager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-       // setText(String.valueOf(manager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)));
-
-        //setText("Started");
-        /*safFacade.GetLiveData("/shirt/tmp", new SensorDataResponse() {
-            @Override
-            public void OnError(Exception e) {
-                setText(e.toString());
-            }
-
-            @Override
-            public void OnSuccess(Byte[] jsonObject) {
-                if (jsonObject != null) {
-                    setText(Arrays.toString(jsonObject));
+            } else {
+                // otherwise, previous month
+                if (month == 0) {
+                    month = 11;
+                    year--;
+                } else {
+                    month--;
                 }
             }
-        });
-*/
-
-        //safFacade.GetLiveData("/shirt/temp";
-
-        /*
-
+        }
+        Log.i("CALLLL", day+" "+month+" "+year);
         JSONObject obj = new JSONObject();
-        try {
-            obj.put("name", text);
-            obj.put("key", "HelloAlfredName");
-        } catch (JSONException e) {
-            e.printStackTrace();
+		try {
+			obj.put("date", day+"_"+month+"_"+year);
+		} catch (Exception e) {
+
         }
 
-        JSONObject queryObject = new JSONObject();
-        try {
-            queryObject.put("key", "HelloAlfredName");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            cloudStorage.deleteJsonObject("HelloAlfredStructuredBucket", queryObject, new BucketResponse() {
-                @Override
-                public void OnError(Exception e) {
-                    setText(e.toString());
-                }
-
-                @Override
-                public void OnSuccess(JSONObject jsonObject) {
-
-                }
-
-                @Override
-                public void OnSuccess(JSONArray jsonArray) {
-
-                }
-            });
-        }
-        catch(Exception ex) {
-            ex.printStackTrace();
-        }
-
-
-        cloudStorage.saveJsonObject("HelloAlfredStructuredBucket", obj, new BucketResponse() {
-            @Override
-            public void OnError(Exception e) {
-                setText(e.toString());
-            }
-
+        cloudStorage.readJsonArray(android_id, obj, new BucketResponse() {
             @Override
             public void OnSuccess(JSONObject jsonObject) {
 
@@ -200,93 +182,37 @@ public class MainActivity extends ActionBarActivity {
 
             @Override
             public void OnSuccess(JSONArray jsonArray) {
-
-            }
-        });
-        */
-
-    }
-
-    private void readText(){
-        JSONObject queryObject = new JSONObject();
-        try {
-            queryObject.put("key", "HelloAlfredName");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        cloudStorage.readJsonArray("HelloAlfredStructuredBucket", queryObject, new BucketResponse() {
-            @Override
-            public void OnError(Exception e) {
-                setText(e.toString());
-            }
-
-            @Override
-            public void OnSuccess(JSONObject jsonObject) {
-                if (jsonObject != null) {
-                    try {
-                        setText(jsonObject.getString("response"));
-                    } catch (JSONException e) {
-                        setText(e.toString());
+                try {
+                    for(int i = 0; i < jsonArray.length(); i++) {
+                        TextView tv = new TextView(getApplicationContext());
+                        tv.setText(jsonArray.getJSONObject(i).toString());
+                        eventView.addView(tv);
                     }
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
             }
 
             @Override
-            public void OnSuccess(JSONArray jsonArray) {
-                setText(jsonArray.toString());
+            public void OnSuccess(byte[] bytes) {
+
+            }
+
+            @Override
+            public void OnError(Exception e) {
+
             }
         });
+        Intent ret = new Intent();
+        ret.putExtra("year", year);
+        ret.putExtra("month", month);
+        ret.putExtra("day", day);
+        this.setResult(RESULT_OK, ret);
+        return;
     }
 
-    private void setText(String text){
-
-        TextView nameText = (TextView) this.findViewById(eu.alfred.calendarapp.R.id.resultLabel);
-        nameText.setText(text);
+    public TextView getHeader() {
+        return header;
     }
-
-    //region NotificationHelper
-    private void sendNotification(String notificationDetails) {
-        // Create an explicit content Intent that starts the main Activity.
-        Intent notificationIntent = new Intent(getApplicationContext(), MainActivity.class);
-
-        // Construct a task stack.
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-
-        // Add the main Activity to the task stack as the parent.
-        stackBuilder.addParentStack(MainActivity.class);
-
-        // Push the content Intent onto the stack.
-        stackBuilder.addNextIntent(notificationIntent);
-
-        // Get a PendingIntent containing the entire back stack.
-        PendingIntent notificationPendingIntent =
-                stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        // Get a notification builder that's compatible with platform versions >= 4
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
-
-        // Define the notification settings.
-        builder.setSmallIcon(eu.alfred.calendarapp.R.drawable.ic_launcher)
-                // In a real app, you may want to use a library like Volley
-                // to decode the Bitmap.
-                .setLargeIcon(BitmapFactory.decodeResource(getResources(),
-                        eu.alfred.calendarapp.R.drawable.ic_launcher))
-                .setColor(Color.BLUE)
-                .setContentTitle(notificationDetails)
-                .setContentText("Notification")
-                .setContentIntent(notificationPendingIntent);
-
-        // Dismiss notification once the user touches it.
-        builder.setAutoCancel(true);
-
-        // Get an instance of the Notification manager
-        NotificationManager mNotificationManager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-        // Issue the notification
-        mNotificationManager.notify(0, builder.build());
-    }
-    //endregion
 
 }

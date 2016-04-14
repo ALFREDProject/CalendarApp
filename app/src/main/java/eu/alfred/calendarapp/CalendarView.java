@@ -23,6 +23,7 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.MonthDisplayHelper;
 import android.view.MotionEvent;
 import android.widget.ImageView;
@@ -176,12 +177,13 @@ public class CalendarView extends ImageView {
     }
 
 	public void newDate(Map<String, String> map, MainActivity main) {
-		int year = Integer.parseInt(map.get("selected_year").substring(1));
+		int year = Integer.parseInt(map.get("selected_year"));
+		Log.i("DAAATE", Integer.toString(year));
 		int month = UtilClass.getMonthInt(map.get("selected_month"));
 		String head = map.get("selected_month")+" "+year;
 		header.setText(head);
 		mRightNow.set(year,month,Calendar.MONDAY);
-		mHelper = new MonthDisplayHelper(year, month, Calendar.MONDAY);
+		mHelper = new MonthDisplayHelper(year, month, Calendar.SUNDAY);
 		initCells();
 		invalidate();
 	}

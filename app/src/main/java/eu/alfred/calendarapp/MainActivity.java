@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.LinearLayout;
@@ -20,6 +21,7 @@ import java.util.Map;
 import eu.alfred.api.storage.responses.BucketResponse;
 import eu.alfred.calendarapp.actions.InsertEventAction;
 import eu.alfred.calendarapp.actions.ShowCalendarAction;
+import eu.alfred.calendarapp.actions.ShowEventAction;
 import eu.alfred.ui.AppActivity;
 import eu.alfred.ui.CircleButton;
 
@@ -34,6 +36,7 @@ public class MainActivity extends AppActivity implements CalendarView.OnCellTouc
 
     final static String SHOW_CALENDAR_ACTION = "ShowCalendarAction";
     final static String INSERT_EVENT_ACTION = "InsertEventAction";
+    final static String SHOW_EVENT_ACTION = "ShowEventAction";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,6 +121,10 @@ public class MainActivity extends AppActivity implements CalendarView.OnCellTouc
                 InsertEventAction iea = new InsertEventAction(this, cade, cloudStorage, android_id);
                 iea.performAction(calledAction, map);
                 break;
+            case SHOW_EVENT_ACTION:
+                ShowEventAction sea = new ShowEventAction(this, cade, cloudStorage, android_id,eventView);
+                sea.performAction(calledAction, map);
+                break;
             default:
                 break;
         }
@@ -185,7 +192,9 @@ public class MainActivity extends AppActivity implements CalendarView.OnCellTouc
                 try {
                     for(int i = 0; i < jsonArray.length(); i++) {
                         TextView tv = new TextView(getApplicationContext());
-                        tv.setText(jsonArray.getJSONObject(i).toString());
+                        tv.setGravity(Gravity.CENTER);
+                        tv.setTextSize(20);
+                        tv.setText(jsonArray.getJSONObject(i).getString("title"));
                         eventView.addView(tv);
                     }
                 } catch (JSONException e) {

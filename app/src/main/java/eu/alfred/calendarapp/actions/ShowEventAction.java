@@ -1,5 +1,6 @@
 package eu.alfred.calendarapp.actions;
 
+import android.util.Log;
 import android.view.Gravity;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -71,8 +72,8 @@ public class ShowEventAction implements ICadeCommand {
                         tv.setTextSize(20);
                         tv.setText(jsonArray.getJSONObject(i).getString("title"));
                         eventView.addView(tv);
-                        cade.sendActionResult(true);
                     }
+                    cade.sendActionResult(true);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -85,7 +86,7 @@ public class ShowEventAction implements ICadeCommand {
 
             @Override
             public void OnError(Exception e) {
-
+                Log.i("eeeee",e.getMessage());
             }
         });
     }

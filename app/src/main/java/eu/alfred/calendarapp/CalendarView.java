@@ -138,7 +138,6 @@ public class CalendarView extends ImageView {
 				} else {
 					mCells[week][day] = new GrayCell(tmp[week][day].day, new Rect(Bound), CELL_TEXT_SIZE);
 				}
-				
 				Bound.offset(CELL_WIDTH, 0); // move to next column 
 				
 				// get today

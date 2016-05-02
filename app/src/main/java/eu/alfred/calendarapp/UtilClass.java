@@ -14,7 +14,7 @@ public class UtilClass {
                 return Calendar.JANUARY;
             case "february":
             case "februari":
-            case "fevrier":
+            case "février":
                 return Calendar.FEBRUARY;
             case "march":
             case "maart":
@@ -37,7 +37,7 @@ public class UtilClass {
                 return Calendar.JULY;
             case "august":
             case "augustus":
-            case "auot":
+            case "août":
                 return Calendar.AUGUST;
             case "september":
             case "septembre":
@@ -50,7 +50,7 @@ public class UtilClass {
             case "novembre":
                 return Calendar.NOVEMBER;
             case "december":
-            case "decembre":
+            case "décembre":
                 return Calendar.DECEMBER;
             default:
                 return 0;

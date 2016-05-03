@@ -73,7 +73,6 @@ public class ShowEventAction implements ICadeCommand {
                         tv.setText(jsonArray.getJSONObject(i).getString("title"));
                         eventView.addView(tv);
                     }
-                    cade.sendActionResult(true);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

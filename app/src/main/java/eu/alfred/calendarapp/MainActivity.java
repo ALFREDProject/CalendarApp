@@ -124,6 +124,7 @@ public class MainActivity extends AppActivity implements CalendarView.OnCellTouc
             case SHOW_EVENT_ACTION:
                 ShowEventAction sea = new ShowEventAction(this, cade, cloudStorage, android_id,eventView);
                 sea.performAction(calledAction, map);
+                cade.sendActionResult(true);
                 break;
             default:
                 break;

@@ -23,6 +23,7 @@ import eu.alfred.calendarapp.actions.InsertEventAction;
 import eu.alfred.calendarapp.actions.ShowCalendarAction;
 import eu.alfred.calendarapp.actions.ShowEventAction;
 import eu.alfred.ui.AppActivity;
+import eu.alfred.ui.BackToPAButton;
 import eu.alfred.ui.CircleButton;
 
 
@@ -44,7 +45,11 @@ public class MainActivity extends AppActivity implements CalendarView.OnCellTouc
         setContentView(R.layout.activity_main);
 
         circleButton = (CircleButton) findViewById(R.id.voiceControlBtn);
-        circleButton.setOnTouchListener(new CircleTouchListener());
+        circleButton.setOnTouchListener(new MicrophoneTouchListener());
+
+        backToPAButton = (BackToPAButton) findViewById(R.id.backControlBtn);
+        backToPAButton.setOnTouchListener(new BackTouchListener());
+
 
         header = (TextView) findViewById(R.id.header);
         Calendar c = Calendar.getInstance();

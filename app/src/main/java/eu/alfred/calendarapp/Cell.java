@@ -25,6 +25,7 @@ import android.graphics.Rect;
 import android.util.DisplayMetrics;
 
 public class Cell {
+
 	private static final String TAG = "Cell";
 	protected Rect mBound = null;
 	protected int mDayOfMonth = 1;	// from 1 to 31
